@@ -535,15 +535,6 @@ class GoogleDriveAdapter extends AbstractAdapter
                fclose($stream);
                return $this->readStream($fileId, $redirect);
             }
-            // return [
-            //    // 'url' => "https://{$url['host']}/{$url['path']}{$query}",
-            //    // 'header' => [
-            //    //    "GET" => "{$url['path']}{$query} HTTP/1.1",
-            //    //    "Host" => "{$url['host']}",
-            //    //    "Authorization" => "Bearer {$access_token}",
-            //    //    "Cookie" => join('; ', $cookies),
-            //    // ]
-            // ];
             return compact('stream');
          }
       }
