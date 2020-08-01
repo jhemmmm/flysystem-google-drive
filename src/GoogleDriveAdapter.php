@@ -297,17 +297,10 @@ class GoogleDriveAdapter extends AbstractAdapter
     *
     * @return bool
     */
-   public function copy($path, $newpath)
+   public function copy($srcId, $fileName)
    {
-      list(, $srcId) = $this->splitPath($path);
-
-      list($newParentId, $fileName) = $this->splitPath($newpath);
-
       $file = new Google_Service_Drive_DriveFile();
-      $file->setName($fileName);
-      $file->setParents([
-         $newParentId
-      ]);
+      $file->setTitle($fileName);
 
       $newFile = $this->service->files->copy($srcId, $file, $this->applyDefaultParams([
          'fields' => $this->fetchfieldsGet
@@ -315,15 +308,10 @@ class GoogleDriveAdapter extends AbstractAdapter
 
       if ($newFile instanceof Google_Service_Drive_DriveFile) {
          $this->cacheFileObjects[$newFile->getId()] = $newFile;
-         $this->cacheFileObjectsByName[$newParentId . '/' . $fileName] = $newFile;
-         list($newDir) = $this->splitPath($newpath);
-         $newpath = (($newDir === $this->root) ? '' : ($newDir . '/')) . $newFile->getId();
-         if ($this->getRawVisibility($path) === AdapterInterface::VISIBILITY_PUBLIC) {
-            $this->publish($newpath);
-         } else {
-            $this->unPublish($newpath);
-         }
-         return true;
+         $this->cacheFileObjectsByName['/' . $fileName] = $newFile;
+         $newpath = $newFile->getId();
+         $this->publish($newpath);
+         return $newFile;
       }
 
       return false;
