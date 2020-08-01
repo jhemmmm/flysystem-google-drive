@@ -300,7 +300,7 @@ class GoogleDriveAdapter extends AbstractAdapter
    public function copy($srcId, $fileName)
    {
       $file = new Google_Service_Drive_DriveFile();
-      $file->setTitle($fileName);
+      $file->setName($fileName);
 
       $newFile = $this->service->files->copy($srcId, $file, $this->applyDefaultParams([
          'fields' => $this->fetchfieldsGet
@@ -446,6 +446,7 @@ class GoogleDriveAdapter extends AbstractAdapter
     */
    public function readStream($path)
    {
+      $dlurl = null;
       $redirect = [];
       if (func_num_args() > 1) {
          $redirect = func_get_arg(1);
