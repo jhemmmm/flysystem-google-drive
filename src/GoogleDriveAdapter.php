@@ -446,7 +446,6 @@ class GoogleDriveAdapter extends AbstractAdapter
     */
    public function readStream($path)
    {
-      $dlurl = null;
       $redirect = [];
       if (func_num_args() > 1) {
          $redirect = func_get_arg(1);
@@ -538,7 +537,16 @@ class GoogleDriveAdapter extends AbstractAdapter
                fclose($stream);
                return $this->readStream($path, $redirect);
             }
-            return compact('stream');
+            return [
+               'query' => $query,
+               'header' => [
+                  "GET {$url['path']}{$query} HTTP/1.1",
+                  "Host: {$url['host']}",
+                  "Authorization: Bearer {$access_token}",
+                  "Cookie: " . join('; ', $cookies),
+                  $redirect
+               ]
+            ]; //compact('stream');
          }
       }
       return false;
