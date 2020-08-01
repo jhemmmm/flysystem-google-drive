@@ -444,7 +444,7 @@ class GoogleDriveAdapter extends AbstractAdapter
     *
     * @return array|false
     */
-   public function readStream($path)
+   public function readStream($fileId)
    {
       $redirect = [];
       if (func_num_args() > 1) {
@@ -457,32 +457,30 @@ class GoogleDriveAdapter extends AbstractAdapter
             'token' => '',
             'cookies' => []
          ];
-         if ($file = $this->getFileObject($path)) {
-            $dlurl = $this->getDownloadUrl($file);
-            $client = $this->service->getClient();
-            if ($client->isUsingApplicationDefaultCredentials()) {
-               $token = $client->fetchAccessTokenWithAssertion();
-            } else {
-               $token = $client->getAccessToken();
-            }
-            $access_token = '';
-            if (is_array($token)) {
-               if (empty($token['access_token']) && !empty($token['refresh_token'])) {
-                  $token = $client->fetchAccessTokenWithRefreshToken();
-               }
-               $access_token = $token['access_token'];
-            } else {
-               if ($token = @json_decode($client->getAccessToken())) {
-                  $access_token = $token->access_token;
-               }
-            }
-            $redirect = [
-               'cnt' => 0,
-               'url' => '',
-               'token' => $access_token,
-               'cookies' => []
-            ];
+         $dlurl = $this->getDownloadUrl($fileId);
+         $client = $this->service->getClient();
+         if ($client->isUsingApplicationDefaultCredentials()) {
+            $token = $client->fetchAccessTokenWithAssertion();
+         } else {
+            $token = $client->getAccessToken();
          }
+         $access_token = '';
+         if (is_array($token)) {
+            if (empty($token['access_token']) && !empty($token['refresh_token'])) {
+               $token = $client->fetchAccessTokenWithRefreshToken();
+            }
+            $access_token = $token['access_token'];
+         } else {
+            if ($token = @json_decode($client->getAccessToken())) {
+               $access_token = $token->access_token;
+            }
+         }
+         $redirect = [
+            'cnt' => 0,
+            'url' => '',
+            'token' => $access_token,
+            'cookies' => []
+         ];
       } else {
          if ($redirect['cnt'] > 5) {
             return false;
@@ -535,16 +533,15 @@ class GoogleDriveAdapter extends AbstractAdapter
             if ($redirect['url']) {
                $redirect['cnt']++;
                fclose($stream);
-               return $this->readStream($path, $redirect);
+               return $this->readStream($fileId, $redirect);
             }
             return [
-               'query' => $query,
+               'url' => "https://{$url['host']}/{$url['path']}{$query}",
                'header' => [
                   "GET {$url['path']}{$query} HTTP/1.1",
                   "Host: {$url['host']}",
                   "Authorization: Bearer {$access_token}",
                   "Cookie: " . join('; ', $cookies),
-                  $redirect
                ]
             ]; //compact('stream');
          }
@@ -1034,20 +1031,20 @@ class GoogleDriveAdapter extends AbstractAdapter
     *
     * @return string|false
     */
-   protected function getDownloadUrl($file)
+   protected function getDownloadUrl($fileId)
    {
-      if (strpos($file->mimeType, 'application/vnd.google-apps') !== 0) {
-         return 'https://www.googleapis.com/drive/v3/files/' . $file->getId() . '?alt=media';
+      if (strpos("video/mp4", 'application/vnd.google-apps') !== 0) {
+         return 'https://www.googleapis.com/drive/v3/files/' . $fileId . '?alt=media';
       } else {
          $mimeMap = $this->options['appsExportMap'];
-         if (isset($mimeMap[$file->getMimeType()])) {
-            $mime = $mimeMap[$file->getMimeType()];
+         if (isset($mimeMap['video/mp4'])) {
+            $mime = $mimeMap['video/mp4'];
          } else {
-            $mime = $mimeMap['default'];
+            $mime = 'video/mp4';
          }
          $mime = rawurlencode($mime);
 
-         return 'https://www.googleapis.com/drive/v3/files/' . $file->getId() . '/export?mimeType=' . $mime;
+         return 'https://www.googleapis.com/drive/v3/files/' . $fileId . '/export?mimeType=' . $mime;
       }
 
       return false;
