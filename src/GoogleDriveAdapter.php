@@ -425,9 +425,7 @@ class GoogleDriveAdapter extends AbstractAdapter
     */
    public function read($fileId)
    {
-      return $this->service->files->get($fileId, $this->applyDefaultParams([
-         'alt' => 'media'
-      ], 'files.get'));
+      return $this->service->files->get($fileId);
 
       return false;
    }
