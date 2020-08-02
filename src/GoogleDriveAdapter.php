@@ -423,16 +423,11 @@ class GoogleDriveAdapter extends AbstractAdapter
     *
     * @return array|false
     */
-   public function read($path)
+   public function read($fileId)
    {
-      list(, $fileId) = $this->splitPath($path);
-      if ($response = $this->service->files->get($fileId, $this->applyDefaultParams([
+      return $this->service->files->get($fileId, $this->applyDefaultParams([
          'alt' => 'media'
-      ], 'files.get'))) {
-         return [
-            'contents' => (string) $response->getBody()
-         ];
-      }
+      ], 'files.get'));
 
       return false;
    }
