@@ -425,7 +425,9 @@ class GoogleDriveAdapter extends AbstractAdapter
     */
    public function read($fileId)
    {
-      return $this->service->files->get($fileId);
+      return $this->service->files->get($fileId, $this->applyDefaultParams([
+         'fields' => ['hasThumbnail']
+      ], 'files.get'));
 
       return false;
    }
