@@ -297,14 +297,13 @@ class GoogleDriveAdapter extends AbstractAdapter
     *
     * @return bool
     */
-   public function copy($srcId, $fileName, $drive_id = null)
+   public function copy($srcId, $fileName)
    {
       $file = new Google_Service_Drive_DriveFile();
       $file->setName($fileName);
 
       $newFile = $this->service->files->copy($srcId, $file, $this->applyDefaultParams([
-         'fields' => $this->fetchfieldsGet,
-         'driveId' => $drive_id,
+         'fields' => $this->fetchfieldsGet
       ], 'files.copy'));
 
       if ($newFile instanceof Google_Service_Drive_DriveFile) {
