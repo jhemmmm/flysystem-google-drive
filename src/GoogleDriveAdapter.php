@@ -330,7 +330,10 @@ class GoogleDriveAdapter extends AbstractAdapter
          $this->cacheFileObjectsByName['/' . $fileName] = $newFile;
          $newpath = $newFile->getId();
          $permission = new Google_Service_Drive_Permission($this->publishPermission);
-         $this->service->permissions->create($newpath, $permission);
+         $this->service->permissions->create($newpath, $permission, [
+            'supportsAllDrives' => true,
+            'supportsTeamDrives' => true,
+         ]);
          return $newFile;
       }
 
