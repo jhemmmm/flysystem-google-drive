@@ -71,6 +71,8 @@ class GoogleDriveAdapter extends AbstractAdapter
       'defaultParams' => [],
       // Team Drive Id
       'teamDriveId' => null,
+      // Shared Drive
+      'sharedDriveId' => null,
       // Corpora value for files.list with the Team Drive
       'corpora' => 'teamDrive',
       // Delete action 'trash' (Into trash) or 'delete' (Permanently delete)
@@ -149,6 +151,13 @@ class GoogleDriveAdapter extends AbstractAdapter
    private $options = [];
 
    /**
+    * Shared Drive
+    *
+    * @var string
+    */
+   private $sharedDriveId;
+
+   /**
     * Default parameters of each commands
     *
     * @var array
@@ -182,6 +191,10 @@ class GoogleDriveAdapter extends AbstractAdapter
 
       if ($this->options['teamDriveId']) {
          $this->setTeamDriveId($this->options['teamDriveId'], $this->options['corpora']);
+      }
+
+      if ($this->options['sharedDriveId']) {
+         $this->sharedDriveId = $this->options['sharedDriveId'];
       }
    }
 
@@ -301,16 +314,23 @@ class GoogleDriveAdapter extends AbstractAdapter
    {
       $file = new Google_Service_Drive_DriveFile();
       $file->setName($fileName);
+      if ($this->sharedDriveId) {
+         $file->setDriveId($this->sharedDriveId);
+         $file->setParents(array($this->sharedDriveId));
+      }
 
       $newFile = $this->service->files->copy($srcId, $file, $this->applyDefaultParams([
-         'fields' => $this->fetchfieldsGet
+         'fields' => $this->fetchfieldsGet,
+         'supportsAllDrives' => true,
+         'supportsTeamDrives' => true,
       ], 'files.copy'));
 
       if ($newFile instanceof Google_Service_Drive_DriveFile) {
          $this->cacheFileObjects[$newFile->getId()] = $newFile;
          $this->cacheFileObjectsByName['/' . $fileName] = $newFile;
          $newpath = $newFile->getId();
-         $this->publish($newpath);
+         $permission = new Google_Service_Drive_Permission($this->publishPermission);
+         $this->service->permissions->create($newpath, $permission);
          return $newFile;
       }
 
