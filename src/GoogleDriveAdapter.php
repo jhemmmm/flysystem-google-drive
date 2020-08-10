@@ -341,46 +341,6 @@ class GoogleDriveAdapter extends AbstractAdapter
    }
 
    /**
-    * PublicUpload
-    *
-    * @param string $fileName
-    * @param File $contents
-    *
-    * @return bool
-    */
-   public function publicUpload($fileName, $contents)
-   {
-      $driveFile = new Google_Service_Drive_DriveFile();
-      $driveFile->setName($fileName);
-      if ($this->sharedDriveId) {
-         $driveFile->setDriveId($this->sharedDriveId);
-         $driveFile->setParents(array($this->sharedDriveId));
-      }
-      $driveFile->setMimeType('video/mp4');
-
-      $params = ['fields' => $this->fetchfieldsGet];
-      if ($contents) {
-         $params['data'] = $contents;
-         $params['uploadType'] = 'media';
-         $params['supportsAllDrives'] = true;
-         $params['supportsTeamDrives'] = true;
-      }
-      $newFile = $this->service->files->create($driveFile, $this->applyDefaultParams($params, 'files.create'));
-      if ($newFile instanceof Google_Service_Drive_DriveFile) {
-         $this->cacheFileObjects[$newFile->getId()] = $newFile;
-         $this->cacheFileObjectsByName['/' . $fileName] = $newFile;
-         $newpath = $newFile->getId();
-         $permission = new Google_Service_Drive_Permission($this->publishPermission);
-         $this->service->permissions->create($newpath, $permission, [
-            'supportsAllDrives' => true,
-            'supportsTeamDrives' => true,
-         ]);
-         return $newFile;
-      }
-      return false;
-   }
-
-   /**
     * Delete a file.
     *
     * @param string $path
@@ -816,10 +776,7 @@ class GoogleDriveAdapter extends AbstractAdapter
          }
          try {
             $permission = new Google_Service_Drive_Permission($this->publishPermission);
-            if ($this->service->permissions->create($file->getId(), $permission, [
-               'supportsAllDrives' => true,
-               'supportsTeamDrives' => true,
-            ])) {
+            if ($this->service->permissions->create($file->getId(), $permission)) {
                return true;
             }
          } catch (Exception $e) {
@@ -1276,12 +1233,7 @@ class GoogleDriveAdapter extends AbstractAdapter
       if (!$srcDriveFile) {
          $mode = 'insert';
          $driveFile->setName($fileName);
-         if ($this->sharedDriveId) {
-            $driveFile->setDriveId($this->sharedDriveId);
-            $driveFile->setParents(array($this->sharedDriveId));
-         } else {
-            $driveFile->setParents([$parentId]);
-         }
+         $driveFile->setParents([$parentId]);
       }
 
       $driveFile->setMimeType($mime);
@@ -1290,8 +1242,6 @@ class GoogleDriveAdapter extends AbstractAdapter
       if ($contents) {
          $params['data'] = $contents;
          $params['uploadType'] = 'media';
-         $params['supportsAllDrives'] = true;
-         $params['supportsTeamDrives'] = true;
       }
       if ($mode === 'insert') {
          $retrievedDriveFile = $this->service->files->create($driveFile, $this->applyDefaultParams($params, 'files.create'));
