@@ -581,7 +581,6 @@ class GoogleDriveAdapter extends AbstractAdapter
     */
    public function getMetadata($path)
    {
-      dd($path);
       if ($this->publish($path) && $obj = $this->getFileObject($path, true)) {
          if ($obj instanceof Google_Service_Drive_DriveFile) {
             return $this->normaliseObject($obj, Util::dirname($path));
