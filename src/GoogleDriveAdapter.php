@@ -1226,6 +1226,7 @@ class GoogleDriveAdapter extends AbstractAdapter
       if (!$mime) {
          $mime = Util::guessMimeType($fileName, $contents);
       }
+      echo "\nParent: {$parentId}";
 
       $driveFile = new Google_Service_Drive_DriveFile();
 
@@ -1234,10 +1235,10 @@ class GoogleDriveAdapter extends AbstractAdapter
          $mode = 'insert';
          $driveFile->setName($fileName);
          if ($this->sharedDriveId) {
-            $driveFile->setDriveId($this->sharedDriveId);
             $driveFile->setParents(array($this->sharedDriveId));
-         } else
+         } else {
             $driveFile->setParents([$parentId]);
+         }
       }
 
       $driveFile->setMimeType($mime);
