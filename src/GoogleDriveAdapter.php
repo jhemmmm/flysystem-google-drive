@@ -6,7 +6,6 @@ use Google_Service_Drive;
 use Google_Service_Drive_DriveFile;
 use Google_Service_Drive_FileList;
 use Google_Service_Drive_Permission;
-use Google_Service_Drive_ParentReference;
 use Google_Http_MediaFileUpload;
 use League\Flysystem\Adapter\AbstractAdapter;
 use League\Flysystem\AdapterInterface;
@@ -1227,7 +1226,6 @@ class GoogleDriveAdapter extends AbstractAdapter
       if (!$mime) {
          $mime = Util::guessMimeType($fileName, $contents);
       }
-      echo "\nParent: {$parentId}";
 
       $driveFile = new Google_Service_Drive_DriveFile();
 
@@ -1235,13 +1233,7 @@ class GoogleDriveAdapter extends AbstractAdapter
       if (!$srcDriveFile) {
          $mode = 'insert';
          $driveFile->setName($fileName);
-         if ($this->sharedDriveId) {
-            $parent = new Google_Service_Drive_ParentReference();
-            $parent->setId($this->sharedDriveId);
-            $driveFile->setParents(array($parent));
-         } else {
-            $driveFile->setParents([$parentId]);
-         }
+         $driveFile->setParents([$parentId]);
       }
 
       $driveFile->setMimeType($mime);
