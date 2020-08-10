@@ -1233,7 +1233,11 @@ class GoogleDriveAdapter extends AbstractAdapter
       if (!$srcDriveFile) {
          $mode = 'insert';
          $driveFile->setName($fileName);
-         $driveFile->setParents([$parentId]);
+         if ($this->sharedDriveId) {
+            $driveFile->setDriveId($this->sharedDriveId);
+            $driveFile->setParents(array($this->sharedDriveId));
+         } else
+            $driveFile->setParents([$parentId]);
       }
 
       $driveFile->setMimeType($mime);
