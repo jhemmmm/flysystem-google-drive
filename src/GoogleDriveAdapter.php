@@ -1236,12 +1236,13 @@ class GoogleDriveAdapter extends AbstractAdapter
          $driveFile->setParents([$parentId]);
       }
 
-      $driveFile->setMimeType($mime);
+      //$driveFile->setMimeType($mime);
 
       $params = ['fields' => $this->fetchfieldsGet];
       if ($contents) {
          $params['data'] = $contents;
-         $params['uploadType'] = 'media';
+         $params['mimeType'] = 'video/mp4';
+         $params['uploadType'] = 'multipart';
       }
       if ($mode === 'insert') {
          $retrievedDriveFile = $this->service->files->create($driveFile, $this->applyDefaultParams($params, 'files.create'));
