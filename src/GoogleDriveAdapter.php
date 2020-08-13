@@ -776,7 +776,7 @@ class GoogleDriveAdapter extends AbstractAdapter
          }
          try {
             $permission = new Google_Service_Drive_Permission($this->publishPermission);
-            if ($this->service->permissions->create($file->getId(), $permission)) {
+            if ($this->service->permissions->create($file->getId(), $permission, ['supportsAllDrives' => true, 'supportsTeamDrives' => true])) {
                return true;
             }
          } catch (Exception $e) {
